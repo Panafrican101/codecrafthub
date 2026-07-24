@@ -95,6 +95,25 @@ def validate_course_payload(payload, require_id=False):
 # Ensure the data file exists when the module is loaded
 ensure_data_file()
 
+#Create a Homepage
+@app.route('/')
+def home():
+       return  """
+       <html>
+            <head>
+                    <style>
+                        body { background: #0f172a; color: #38bdf8; font-family; sans-serif; text-align: center; padding-top: 20vh; }
+                        h1 {font-size: 3rem; margin-bottom: 0.5rem; }
+                        p { color: #94a3b8; font-size: 1.2rem; }
+                     </style>
+            </head>
+        <body>
+                     <body><h1>Course API is Online</h1>
+                     <p>This backend is up and running smoothly. Head over to <a href="/api/courses" style="color: #38bdf8;">/courses</a> to view the data.</p>
+        </body>
+    </html>
+    """
+                
 # 1) Create a new course
 @app.route('/api/courses', methods=['POST'])
 def create_course():

@@ -147,13 +147,17 @@ def get_course(course_id):
 
 # 4) Update a course
 @app.route('/api/courses', methods=['PUT'])
-def update_course():
+@app.route('/api/courses/<int:course_id>', methods=['PUT'])
+def update_course(course_id=None):
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify({"error": "Invalid JSON payload"}), 400
 
-    if 'id' not in data:
+    target_id = course_id if course_id is not None else data.get('id')
+    if target_id is None:
         return jsonify({"error": "Missing field: id"}), 400
+
+    data['id'] = target_id
 
     valid, errors = validate_course_payload(data, require_id=True)
     if not valid:
@@ -179,15 +183,21 @@ def update_course():
 
 # 5) Delete a course
 @app.route('/api/courses', methods=['DELETE'])
-def delete_course():
+@app.route('/api/courses/<int:course_id>', methods=['DELETE'])
+def delete_course(course_id=None):
     data = request.get_json(silent=True)
-    if not isinstance(data, dict) or 'id' not in data:
-        return jsonify({"error": "Missing field: id"}), 400
-    if not isinstance(data['id'], int) or data['id'] <= 0:
+
+    target_id = course_id
+    if target_id is None:
+        if not isinstance(data, dict) or 'id' not in data:
+            return jsonify({"error": "Missing field: id"}), 400
+        target_id = data['id']
+
+    if not isinstance(target_id, int) or target_id <= 0:
         return jsonify({"error": "Invalid id"}), 400
 
     courses = read_courses()
-    index = next((i for i, c in enumerate(courses) if c['id'] == data['id']), None)
+    index = next((i for i, c in enumerate(courses) if c['id'] == target_id), None)
     if index is None:
         return jsonify({"error": "Course not found"}), 404
 
@@ -198,7 +208,7 @@ def delete_course():
     except Exception as e:
         return jsonify({"error": "Unable to write data to file", "detail": str(e)}), 500
 
-    return jsonify({"message": "Course deleted", "id": data['id']}), 200
+    return jsonify({"message": "Course deleted", "id": target_id}), 200
 
 # Run the app
 if __name__ == '__main__':
